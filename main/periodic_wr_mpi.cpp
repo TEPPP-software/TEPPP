@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 	else
 		box_dim = 0;
 	vector<double> box_dims = {box_dim, box_dim, box_dim};
-	create_ouput_dir();
+	create_output_dir();
 	ofstream outfile;
 	string file_name = to_string(chain_length) + "_periodic_wr_mpi_out_" + to_string(rank) + ".txt";
 	outfile.open("./output/" + file_name);

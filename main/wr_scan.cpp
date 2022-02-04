@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	int step = stoi(argv[6]);
 	int num;
 	double** coords = read_coords(argv[1], &num);
-	create_ouput_dir();
+	create_output_dir();
 	ofstream outfile;
 	outfile.open("./output/wr_scan_out.txt");
 

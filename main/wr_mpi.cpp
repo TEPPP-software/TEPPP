@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	int num;
 	double** coords = read_coords(argv[1], &num);
 	double result[chunk];
-	create_ouput_dir();
+	create_output_dir();
 	string file_name = to_string(chain_length) + "_wr_mpi_out_" + to_string(rank) + ".txt";
 	ofstream outfile;
 	outfile.open("./output/" + file_name);

@@ -1574,7 +1574,7 @@ vector<int> find_knot(map<int, double> poly, vector<string> params)
  * if it does exists, skip creating the directory.
  *
  */
-void create_ouput_dir()
+void create_output_dir()
 {
 	if (!fs::exists("output"))
 	{

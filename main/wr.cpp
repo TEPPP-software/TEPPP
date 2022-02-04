@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	{
 		coords = read_coords(argv[1], &num, chain_length, box_dim);
 	}
-	create_ouput_dir();
+	create_output_dir();
 	ofstream outfile;
 	int count = 0;
 	double sum = 0;
