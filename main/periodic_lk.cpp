@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	int num;
 	double** coords = read_coords(argv[1], &num);
 	double result[num_chains][num_chains];
-	create_ouput_dir();
+	create_output_dir();
 	ofstream outfile;
 	outfile.open("./output/periodic_lk_out.txt");
 

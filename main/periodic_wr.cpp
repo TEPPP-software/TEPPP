@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 	else
 		box_dim = 0;
 	vector<double> box_dims = {box_dim, box_dim, box_dim};
-	create_ouput_dir();
+	create_output_dir();
 	ofstream outfile;
 	outfile.open("./output/periodic_wr_out.txt");
 	double** coords = read_coords(argv[1], &num);

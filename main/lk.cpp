@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	ofstream outfile;
 	int count = 0;
 	double sum = 0;
-	create_ouput_dir();
+	create_output_dir();
 	outfile.open("./output/lk_out.txt");
 
 	for (int i = 0; i < num_chains; i++)

@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
 		box_dim = 0;
 	vector<double> box_dims = {box_dim, box_dim, box_dim};
 	ofstream outfile;
-	create_ouput_dir();
+	create_output_dir();
 	outfile.open("./output/jones_out.txt");
 	map<int, double> result;
 	double** coords = read_coords(argv[1], &num);

@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
 	}
 
 	int num;
-	create_ouput_dir();
+	create_output_dir();
 	ofstream outfile;
 	outfile.open("./output/jones_scan_out.txt");
 	map<int, double> result;
