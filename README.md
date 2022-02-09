@@ -10,11 +10,11 @@
 <h3 align="center">The Topological Entanglement of Polymers, Proteins, and Periodic systems (TEPPP) Software</h3>
 <hr />
 
->© Copyright 2021 Eleni Panagiotou and Tom Herschberg \
+>© Copyright 2021 Tom Herschberg, Kyle Pifer and Eleni Panagiotou \
 > \
 >If you use this code you must reference the following paper: \
 > \
->Herschberg, T. and Panagiotou, E., \
+>Herschberg, T., Pifer, K. and Panagiotou, E., \
 >A computational package for measuring Topological Entanglement in Polymers, Proteins and Periodic systems (TEPPP), 2021,(submitted)
 > \
 > \
@@ -99,7 +99,7 @@ Calling `scan` commands requires 4 parameters, which must be provided in the com
 1. The filename (including path) of the data file containing the coordinates of the system to analyze.
 2. The length of the initial interval at which to scan.
 3. The length of the final interval at which to scan.
-4. The amount to increment the interval after a scan completes.
+4. The amount to increase the interval after a scan completes.
 
 Additionally, there is an optional parameter that can be passed only to the `jones_scan` command. The user may scan for a specific knot type in order to find the location of a knot within a chain by passing the name of the knot to `jones_scan` in the command line. Currently, the only supported knot types are trefoil, figure-8, pentafoil, and stevedore.
 
