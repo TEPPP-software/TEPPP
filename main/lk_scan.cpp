@@ -32,17 +32,9 @@ int main(int argc, char* argv[])
 	{
 		coords = read_coords(argv[1], &num, chain_length, box_dim);
 	}
+	create_output_dir();
 	ofstream outfile;
-	// Create output directory if it doesn't exist
-	if (!fs::exists("output"))
-	{
-		fs::create_directory("../output");
-	}
-	else
-	{
-		cout << "Output directory already exists. Skipping..." << endl;
-	}
-	outfile.open("../output/lk_scan_out.txt");
+	outfile.open("./output/lk_scan_out.txt");
 
 	for (int i = 0; i < num_chains; i++)
 	{

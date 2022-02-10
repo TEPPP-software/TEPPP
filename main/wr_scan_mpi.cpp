@@ -25,9 +25,14 @@ int main(int argc, char* argv[])
 	int num;
 	double** coords = read_coords(argv[1], &num);
 	create_output_dir();
-	string file_name = to_string(chain_length) + "_wr_mpi_out_" + to_string(rank) + ".txt";
+	string file_name = to_string(chain_length) + "_wr_scan_mpi_out_" + to_string(rank) + ".txt";
+	if (!fs::exists("./output/wr_scan_mpi"))
+	{
+		cout << "Creating wr_scan_mpi directory..." << endl;
+		fs::create_directory("./output/wr_scan_mpi");
+	}
 	ofstream outfile;
-	outfile.open("./output/" + file_name);
+	outfile.open("./output/wr_scan_mpi/" + file_name);
 
 	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
 	{

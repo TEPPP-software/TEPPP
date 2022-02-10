@@ -26,30 +26,28 @@ SERIAL_TARGET=convertor ./build/jones ./build/jones_scan ./build/lk ./build/lk_s
 
 MPI_TARGET=convertor ./build/jones_mpi ./build/lk_mpi ./build/lk_scan_mpi ./build/periodic_lk_mpi ./build/periodic_wr_mpi ./build/periodic_wr_scan_mpi ./build/wr_mpi ./build/wr_scan_mpi
 
-SRC=$(wildcard ./dcd/*.cpp)
-
-OBJ=$(patsubst ./dcd/%.cpp,./obj/%.o,$(SRC))
 
 #################################################################
 #################################################################
 
 all:$(TARGET)
+	@echo "=========================================================="
 	@echo "Compilation Success"
+	@echo "=========================================================="
 
 serial:$(SERIAL_TARGET)
+	@echo "=========================================================="
 	@echo "Serial Compilation Success"
+	@echo "=========================================================="
 
 mpi:$(MPI_TARGET)
+	@echo "=========================================================="
 	@echo "Parallel Compilation Success"
+	@echo "=========================================================="
 
-$(DCD_TARGET):Makefile
-
-./obj/%.o:./dcd/%.cpp
-	@$(MKDIR)
-	$(CXX) $(CXX_OPT) -c $< -o $@
-
-$(DCD_TARGET):$(OBJ)
-	$(CXX) $(CXX_OPT) $(LD_LIB) $(OBJ) -o $@ $(LD_OPT)
+./convertor:./main/convertor.cpp
+	@echo "Convertor Compilation Success"
+	$(CXX) $? -o $@
 
 ./build/jones:./main/jones.cpp
 	@$(MKDIR_BUILD)
@@ -102,7 +100,7 @@ $(DCD_TARGET):$(OBJ)
 # 1: https://stackoverflow.com/questions/1490949/how-to-write-loop-in-a-makefile
 # 2: https://stackoverflow.com/questions/26564825/what-is-the-meaning-of-a-double-dollar-sign-in-bash-makefile
 clean:
-	rm -rfv ./build ./obj ./converted ./convertor ./output;
+	rm -rfv ./build ./converted ./convertor ./output;
 
 format:
 	python ./scripts/clang-format-diff.py

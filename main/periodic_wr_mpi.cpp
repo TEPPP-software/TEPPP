@@ -76,9 +76,14 @@ int main(int argc, char* argv[])
 		box_dim = 0;
 	vector<double> box_dims = {box_dim, box_dim, box_dim};
 	create_output_dir();
+	if (!fs::exists("./output/periodic_wr_mpi"))
+	{
+		cout << "Creating periodic_wr_mpi directory..." << endl;
+		fs::create_directory("./output/periodic_wr_mpi");
+	}
 	ofstream outfile;
 	string file_name = to_string(chain_length) + "_periodic_wr_mpi_out_" + to_string(rank) + ".txt";
-	outfile.open("./output/" + file_name);
+	outfile.open("./output/periodic_wr_mpi/" + file_name);
 	double** coords = read_coords(argv[1], &num);
 	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
 	{
