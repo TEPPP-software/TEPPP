@@ -23,8 +23,13 @@ int main(int argc, char* argv[])
 	double result[chunk][num_chains];
 	create_output_dir();
 	string file_name = to_string(chain_length) + "_periodic_lk_mpi_out_" + to_string(rank) + ".txt";
+	if (!fs::exists("./output/periodic_lk_mpi"))
+	{
+		cout << "Creating periodic_lk_mpi directory..." << endl;
+		fs::create_directory("./output/periodic_lk_mpi");
+	}
 	ofstream outfile;
-	outfile.open("./output/" + file_name);
+	outfile.open("./output/periodic_lk_mpi/" + file_name);
 
 	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
 	{

@@ -18,7 +18,12 @@ int main(int argc, char* argv[])
 	create_output_dir();
 	string file_name = to_string(chain_length) + "_lk_mpi_out_" + to_string(rank) + ".txt";
 	ofstream outfile;
-	outfile.open("./output/" + file_name);
+	if (!fs::exists("./output/lk_mpi"))
+	{
+		cout << "Creating lk_mpi directory..." << endl;
+		fs::create_directory("./output/lk_mpi");
+	}
+	outfile.open("./output/lk_mpi/" + file_name);
 
 	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
 	{

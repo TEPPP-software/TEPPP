@@ -189,8 +189,17 @@ int main(int argc, char* argv[])
 	int rank, size;
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	int chain_length = 100;
-	int num_chains = 4;
+	/**
+	 * argv[] params:
+	 *
+	 * argv[1] = PATH
+	 * argv[2] = chain_length
+	 * argv[3] = num_chain
+	 */
+	int num_chains = stoi(argv[3]);
+	;
+	int chain_length = stoi(argv[2]);
+	;
 	int chunk = num_chains / size;
 	int offset = chunk * rank;
 	bool last = false;
@@ -198,13 +207,18 @@ int main(int argc, char* argv[])
 		last = true;
 	int num;
 	map<int, double> result;
-	string in_dir = "../data/" + string(argv[2]);
-	string in_file = in_dir + string(argv[1]);
-	cout << "infile: " << in_file << "\n";
-	string outdir = "../results/" + string(argv[2]);
-	string outfile_name = outdir + to_string(rank) + "_out" + string(argv[1]);
+	create_output_dir();
+	string in_file = string(argv[1]);
+	string outfile_name = "jones_mpi_out_" + to_string(rank) + ".txt";
 	ofstream outfile;
-	outfile.open(outfile_name);
+	// Create jones_mpi directory
+	if (!fs::exists("./output/jones_mpi"))
+	{
+		cout << "Creating jones_mpi directory..." << endl;
+		fs::create_directory("./output/jones_mpi");
+	}
+	outfile.open("./output/jones_mpi/" + outfile_name);
+
 	double** coords = read_coords(in_file, &num);
 	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
 	{
