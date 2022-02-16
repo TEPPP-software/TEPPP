@@ -67,7 +67,7 @@ The current version of TEPPP only supports running individual commands through t
 ``` 
 where `CHAIN_LENGTH` is the number of atoms in each chain, `NUM_CHAINS` is the number of chains in the system, and `BOX_DIM` is the length of one side of the periodic box if the system uses periodic boundary conditions. If the system does not use periodic boundary conditions, enter 0 for `BOX_DIM`. 
 
-> :bulb: Note that only .read_data, .dump, and .dcd files are supported at this time and that all coordinates must be provided to the convertor in unwrapped form. Once the convertor command has been run, the file with the converted data will be located in the `TEPPP/converted` directory for further use.
+> :bulb: Note that only .teppp files are supported. All other data files must be converted to .teppp either by the user or by using the convertor utility. Only .read_data files (with all coordinates in unwrapped form) are supported by the convertor utility at this time. Once the convertor command has been run, the file with the converted data will be located in the `TEPPP/converted` directory for further use.
 
 Once a .teppp file with the desired coordinates has been generated, any of the software commands can be used in conjunction with the file to generate results. The `base` commands that are currently available are:
 
@@ -75,18 +75,16 @@ Once a .teppp file with the desired coordinates has been generated, any of the s
 * lk | Calculates the linking number between each pair of chains in the systemLinking Numbers
 * wr | Calculates the Writhe of each chain in the system
 
-All `base` commands are called using the same syntax. There is one required parameter:
+All `base` commands are called using the same syntax:
 
-1. The filename (including path) of the data file containing the coordinates of the system to analyze.
+The filename (including path) of the data file containing the coordinates of the system to analyze followed by CHAIN_LENGTH NUM_CHAINS BOX_DIM
 
 In addition to these `base` commands, there are several types of variant commands also included in TEPPP. `periodic` commands analyze the topological entanglement of a given system while accounting for periodic boundary conditions. The `periodic` commands that are currently available are:
 
 * periodic_wr | Calculates the periodic Writhe of each chain in the system
 * periodic_lk | Calculates the periodic linking number between each pair of chains in the system
 
-The syntax for calling `periodic` commands is the same as the syntax for calling `base` commands; there is one required parameter:
-
-1. The filename (including path) of the data file containing the coordinates of the system to analyze.
+The syntax for calling `periodic` commands is the same as the syntax for calling `base` commands.
 
 `scan` commands are used to analyze the topological entanglement of certain parts of chains rather than the entire chain. For example, if a user wants to the part of a single chain that contributes the most to the overall Writhe of that chain, they would use a `scan` command. The `scan` commands that are currently available are:
 
@@ -100,8 +98,6 @@ Calling `scan` commands requires 4 parameters, which must be provided in the com
 2. The length of the initial interval at which to scan.
 3. The length of the final interval at which to scan.
 4. The amount to increase the interval after a scan completes.
-
-Additionally, there is an optional parameter that can be passed only to the `jones_scan` command. The user may scan for a specific knot type in order to find the location of a knot within a chain by passing the name of the knot to `jones_scan` in the command line. Currently, the only supported knot types are trefoil, figure-8, pentafoil, and stevedore.
 
 `mpi` commands are parallel versions of the `base`, `periodic`, and `scan` commands discussed above. They leverage MPI to split the workload between a given number of processors rather than performing the work serially. The `mpi` commands that are currently available are:
 
@@ -118,34 +114,43 @@ Additionally, there is an optional parameter that can be passed only to the `jon
 
 ## Examples
 
-### Linking Numbers:
+### Gauss linking integral:
 
-To calculate the linking numbers between each pair of chains in a system found in "../data/systemA.teppp" with 100 chains each of length 20:
+To calculate the Gauss linking integral between each pair of chains in a system found in "../data/systemA.teppp" with 100 chains each of length 20 in a cubic periodic box of length 13.35315:
 
 ```bash
-./lk "../data/systemA.teppp"
+./lk "../data/systemA.teppp" 20 100 13.35315
 ```
+using MPI to split the work between 4 different processes:
+
+```bash
+mpirun -np 4 ./lk_mpi "../data/systemA.teppp" 20 100 13.35315
+```
+
 ### Periodic Writhe:
 
-To calculate the periodic Writhe of each chain in a system found in "../data/systemB.teppp" with 50 chains each of length 25 and a periodic box with length 9.275:
+To calculate the Periodic Writhe of each chain in a system found in "../data/systemA.teppp" with 100 chains each of length 20 in a cubic periodic box of length 13.35315:
 
 ```bash
-./periodic_wr "../data/systemB.teppp"
+./periodic_wr "../data/systemA.teppp" 20 100 13.35315
 ```
 ### Jones Polynomial:
 
-To scan along each chain and calculate the Jones polynomial of each subset of each chain from size 10 to size 20, skipping by 2, and searching for a trefoil knot in a system found in "../data/systemC.teppp" with 10 chains each of length 200:
+To compute the Jones polynomial of each chain in a system found in "../data/systemA.teppp" with 100 chains each of length 20 in a cubic periodic box of length 13.35315:
 
 ```bash
-./jones_scan "../data/systemC.teppp" 10 20 2 "trefoil"
+./jones "../data/systemA.teppp" 20 100 13.35315
 ```
-### Linking Number Between Pairs of Chains:
 
-To calculate the linking number between each pair of chains in a system found in "../data/systemD.teppp" with 20 chains each of length 20, using MPI to split the work between 4 different processes:
+### Scan Jones Polynomial:
+
+To scan along each chain and calculate the Jones polynomial of each subchain in a system found in "../data/systemA.teppp" with 100 chains each of length 20 starting with scanning length 5 up to scanning length 10 with a step of 5:
 
 ```bash
-mpirun -np 4 ./lk_mpi "../data/systemD.teppp"
+./jones_scan "../data/systemC.teppp" 20 100 5 10 5
 ```
+
+
 ## License
 <h3><a href="./LICENSE">BSD 3-Clause "New" or "Revised" License</a></h3>
 
