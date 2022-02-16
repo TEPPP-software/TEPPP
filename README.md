@@ -154,7 +154,7 @@ To scan along each chain and calculate the Jones polynomial of each subchain in 
 ## License
 <h3><a href="./LICENSE">BSD 3-Clause "New" or "Revised" License</a></h3>
 
->Copyright (c) 2021, Eleni Panagiotou and Tom Herschberg \
+>Copyright (c) 2021, Tom Herschberg, Kyle Pifer and Eleni Panagiotou \
 >All rights reserved.
 
 ## Contributors
