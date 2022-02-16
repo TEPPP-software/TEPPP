@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
 		map<int, double> jones_poly = jones("", temp_coords, true, chain_length, 10);
 		for (map<int, double>::const_iterator it = jones_poly.begin(); it != jones_poly.end(); ++it)
 		{
-			outfile << it->second << "A^" << it->first;
+			outfile << it->second << "A^" << it->first << " + ";;
 			result[it->first] += it->second;
 		}
 		outfile << "\n";
@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
 	{
 		if (it->second == 0 || it->second == -0)
 			continue;
-		outfile << it->second / num_chains << "A^" << it->first;
+		outfile << it->second / num_chains << "A^" << it->first << " + ";
 	}
 	outfile << "\n";
 

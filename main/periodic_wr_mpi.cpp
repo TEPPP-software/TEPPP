@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 		}
 		double pwr = periodic_wr(temp_coords, chain_length, box_dims, false);
 		pwr += wr(temp_coords, chain_length, false);
-		outfile << "periodic writhe of chain " << i << ": " << pwr << "\n";
+		outfile << pwr << "\n";
 		delete_array(temp_coords, chain_length);
 	}
 

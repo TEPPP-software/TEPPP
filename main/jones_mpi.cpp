@@ -233,7 +233,6 @@ int main(int argc, char* argv[])
 			// "\n";
 		}
 		map<int, double> jones_poly = jones("", temp_coords, true, chain_length, 25);
-		outfile << "Chain " << i << " jones: ";
 		for (map<int, double>::const_iterator it = jones_poly.begin(); it != jones_poly.end(); ++it)
 		{
 			outfile << it->second << "A^" << it->first << " + ";
@@ -243,7 +242,6 @@ int main(int argc, char* argv[])
 		delete_array(temp_coords, chain_length);
 	}
 
-	outfile << "Total system jones: ";
 	for (map<int, double>::const_iterator it = result.begin(); it != result.end(); ++it)
 	{
 		if (it->second == 0 || it->second == -0)

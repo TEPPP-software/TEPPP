@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 			}
 
 			double res = lk(chain1, chain2, chain_length, chain_length, false);
-			outfile << "linking number between chains " << i << " and " << j << ": " << res << "\n";
+			outfile << res << "\n";
 			result[i - (rank * chunk)][j] = res;
 			delete_array(chain2, chain_length);
 		}

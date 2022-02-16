@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 		}
 
 		double res = wr(chain1, chain_length, false);
-		outfile << "writhe of chain " << i << ": " << res << "\n";
+		outfile << res << "\n";
 		result[i - (rank * chunk)] = res;
 		delete_array(chain1, chain_length);
 	}

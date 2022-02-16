@@ -93,8 +93,7 @@ int main(int argc, char* argv[])
 				}
 			}
 
-			outfile << "periodic linking number between chains " << i << " and " << j << ": "
-					<< result[i - (rank * chunk)][j] << "\n";
+			outfile << result[i - (rank * chunk)][j] << "\n";
 			delete_array(chain2, chain_length);
 		}
 

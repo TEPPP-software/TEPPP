@@ -231,11 +231,12 @@ int main(int argc, char* argv[])
 					temp_coords[l][2] = coords[l + k][2];
 				}
 
+				outfile << "jones of chain " << i << " at atom " << k << " with chunk length " << j << ": ";
 				// this is the jones polynomial of that part
 				map<int, double> jones_poly = jones(" ", temp_coords, true, j, 20);
 				for (map<int, double>::const_iterator it = jones_poly.begin(); it != jones_poly.end(); ++it)
 				{
-					outfile << it->second << "A^" << it->first;
+					outfile << it->second << "A^" << it->first << " + ";
 					result[it->first] += it->second;
 				}
 				outfile << "\n";
