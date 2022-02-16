@@ -160,6 +160,7 @@ To scan along each chain and calculate the Jones polynomial of each subchain in 
 ## Contributors
 <a href="https://github.com/tomhers/TEPPP/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=tomhers/TEPPP" />
+  <img src="https://contrib.rocks/image?repo=TEPPP-software/TEPPP" />
 </a>
 
 
