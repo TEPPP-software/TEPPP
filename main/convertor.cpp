@@ -1,6 +1,6 @@
-#include "../include/dcd_r.hpp"
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <vector>
 namespace fs = std::filesystem;
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 		std::cout << "converted directory already exists. Skipping..." << std::endl;
 	}
 	std::string infname(argv[1]);
-	std::string outfname = "../converted/" + std::string(fs::path(infname).filename());
+	std::string outfname = "./converted/" + std::string(fs::path(infname).filename());
 	std::string ext = std::string(fs::path(infname).extension());
 	fs::path p = fs::path(outfname).replace_extension(".teppp");
 	outfname = std::string(p);
@@ -101,89 +101,10 @@ int main(int argc, char** argv)
 		myfile.close();
 		outfile.close();
 	}
-
-	else if (ext.compare(".dcd") == 0)
+	else
 	{
-		DCD_R dcdf(infname.c_str());
-		const float *x, *y, *z;
-		dcdf.read_header();
-		for (int i = 0; i < dcdf.getNFILE(); i++)
-		{
-			dcdf.read_oneFrame();
-
-			x = dcdf.getX();
-			y = dcdf.getY();
-			z = dcdf.getZ();
-
-			for (int j = 0; j < dcdf.getNATOM(); j++)
-			{
-				outfile << std::to_string(x[j]) + " " + std::to_string(y[j]) + " " + std::to_string(z[j]) + "\n";
-			}
-		}
-
-		outfile.close();
+		std::cout << "File extension not supported. Exiting...\n";
+		exit(EXIT_FAILURE);
 	}
-
-	else if (ext.compare(".pdb") == 0)
-	{
-		std::string command = "python parsepdb.py " + infname;
-		int res = system(command.c_str());
-
-		std::string line;
-		std::ifstream myfile;
-		myfile.open("simplepdb.pdb");
-		int num_atoms = 0;
-		std::string::size_type sz;
-
-		if (!myfile.is_open())
-		{
-			std::cout << "Couldn't open file\n";
-			exit(EXIT_FAILURE);
-		}
-
-		while (getline(myfile, line))
-		{
-			std::string buf;
-			std::stringstream ss(line);
-			int count = 0;
-			std::vector<std::string> tokens;
-			while (ss >> buf)
-			{
-				tokens.push_back(buf);
-				count++;
-			}
-
-			if (count == 1)
-			{
-				num_atoms = stoi(tokens[0], &sz);
-				break;
-			}
-		}
-
-		if (num_atoms == 0)
-		{
-			std::cout << "num_atoms not found\n";
-			exit(EXIT_FAILURE);
-		}
-
-		while (getline(myfile, line))
-		{
-			std::string buf;
-			std::stringstream ss(line);
-			int count = 0;
-			std::vector<std::string> tokens;
-			while (ss >> buf)
-			{
-				tokens.push_back(buf);
-				count++;
-			}
-
-			if (count > 0)
-			{
-				outfile << tokens[0] + " " + tokens[1] + " " + tokens[2] + "\n";
-			}
-		}
-	}
-
 	return 0;
 }

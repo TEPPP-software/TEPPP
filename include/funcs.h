@@ -1581,10 +1581,6 @@ void create_output_dir()
 		cout << "Creating output directory..." << endl;
 		fs::create_directory("output");
 	}
-	else
-	{
-		cout << "Output directory already exists! Skipping..." << endl;
-	}
 }
 
 #endif

@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 			}
 
 			double res = lk(chain1, chain2, chain_length, chain_length, true);
-			outfile << i << " and " << j << ": " << res << "\n";
+			outfile << res << "\n";
 			sum += abs(res);
 			count++;
 			delete_array(chain2, chain_length);

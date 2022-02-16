@@ -38,9 +38,14 @@ int main(int argc, char* argv[])
 		coords = read_coords(argv[1], &num, chain_length, box_dim);
 	}
 	create_output_dir();
-	string file_name = "lk_mpi_out_" + to_string(rank) + ".txt";
+	string file_name = "lk_scan_mpi_out_" + to_string(rank) + ".txt";
+	if (!fs::exists("./output/lk_scan_mpi"))
+	{
+		cout << "Creating lk_scan_mpi directory..." << endl;
+		fs::create_directory("./output/lk_scan_mpi");
+	}
 	ofstream outfile;
-	outfile.open("./output/" + file_name);
+	outfile.open("./output/lk_scan_mpi/" + file_name);
 
 	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
 	{

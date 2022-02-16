@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 				}
 			}
 
-			outfile << i << " and " << j << ": " << result[i][j] << "\n";
+			outfile << result[i][j] << "\n";
 			delete_array(chain2, chain_length);
 		}
 

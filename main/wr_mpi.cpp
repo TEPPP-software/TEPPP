@@ -17,8 +17,13 @@ int main(int argc, char* argv[])
 	double result[chunk];
 	create_output_dir();
 	string file_name = to_string(chain_length) + "_wr_mpi_out_" + to_string(rank) + ".txt";
+	if (!fs::exists("./output/wr_mpi"))
+	{
+		cout << "Creating wr_mpi directory..." << endl;
+		fs::create_directory("./output/wr_mpi");
+	}
 	ofstream outfile;
-	outfile.open("./output/" + file_name);
+	outfile.open("./output/wr_mpi/" + file_name);
 
 	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
 	{
@@ -32,7 +37,7 @@ int main(int argc, char* argv[])
 		}
 
 		double res = wr(chain1, chain_length, false);
-		outfile << "writhe of chain " << i << ": " << res << "\n";
+		outfile << res << "\n";
 		result[i - (rank * chunk)] = res;
 		delete_array(chain1, chain_length);
 	}
