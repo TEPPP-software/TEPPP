@@ -26,10 +26,10 @@
    - [Building](#building)
    - [Usage](#usage)
 - [Examples](#examples)
-   - [Linking Numbers](#linking-numbers)
+   - [Gauss linking integral](#gauss-linking-integral)
    - [Periodic Writhe](#periodic-writhe)
    - [Jones Polynomial](#jones-polynomial)
-   - [Linking Number Between Pairs of Chains](#linking-number-between-pairs-of-chains)
+   - [Scan Jones Polynomial](#scan-jones-polynomial)
 - [License](#license)
 - [Contributors](#contributors)
 
