@@ -3,8 +3,8 @@
   <a href="./LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/tomhers/TEPPP">
   </a>
-  <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/Zer0F8th/TEPPP">
-  <img alt="GitHub issues" src="https://img.shields.io/github/issues/Zer0F8th/TEPPP">
+  <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/TEPPP-software/TEPPP">
+  <img alt="GitHub issues" src="https://img.shields.io/github/issues/TEPPP-software/TEPPP">
 </p>
 
 <h3 align="center">The Topological Entanglement of Polymers, Proteins, and Periodic systems (TEPPP) Software</h3>
