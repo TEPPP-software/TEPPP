@@ -22,9 +22,9 @@ DCD_TARGET=convertor
 
 TEMP_TARGET=convertor ./build/jones
 
-SERIAL_TARGET=convertor ./build/jones ./build/jones_scan ./build/lk ./build/lk_scan ./build/periodic_lk ./build/periodic_lk_scan ./build/periodic_wr ./build/periodic_wr_scan ./build/wr ./build/wr_scan
+SERIAL_TARGET=convertor ./build/jones ./build/jones_scan ./build/lk ./build/lk_scan ./build/periodic_lk ./build/periodic_wr ./build/wr ./build/wr_scan
 
-MPI_TARGET=convertor ./build/jones_mpi ./build/lk_mpi ./build/lk_scan_mpi ./build/periodic_lk_mpi ./build/periodic_wr_mpi ./build/periodic_wr_scan_mpi ./build/wr_mpi ./build/wr_scan_mpi
+MPI_TARGET=convertor ./build/jones_mpi ./build/lk_mpi ./build/lk_scan_mpi ./build/periodic_lk_mpi ./build/periodic_wr_mpi ./build/wr_mpi ./build/wr_scan_mpi
 
 
 #################################################################
