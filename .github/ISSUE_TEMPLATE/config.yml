@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Bug Report
-    url: https://github.com/Zer0F8th/TEPPP/issues/new?template=bug_report.md&projects=Zer0F8th/TEPPP/1&labels=bug+%3Abug%3A
+    url: https://github.com/TEPPP-software/TEPPP/issues/new?template=bug_report.md&labels=bug+%3Abug%3A
     about: Report a bug
   - name: Documentation Issue
-    url: https://github.com/Zer0F8th/TEPPP/issues/new?template=documentation_issue.md&projects=Zer0F8th/TEPPP/1&labels=documentation+%3Abook%3A
+    url: https://github.com/TEPPP-software/TEPPP/issues/new?template=documentation_issue.md&labels=documentation+%3Abook%3A
     about: Report a documentation issue
