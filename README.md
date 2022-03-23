@@ -44,7 +44,7 @@
 
 ### Building
 
-TEPPP requires a compiler which fully supports C++17 (GCC 7 and up). If parallel execution is desired, a functioning MPI installation must be present in the PATH variable. 
+TEPPP requires a compiler which fully supports C++17 (GCC 10 and up). If parallel execution is desired, a functioning MPI installation must be present in the PATH variable. 
 
 To build only the serial version of the software, run the following command: 
 ```bash
