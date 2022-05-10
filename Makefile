@@ -2,9 +2,9 @@
 ########################   MakeVars   ###########################
 #################################################################
 
-CXX=g++
+CXX=g++ -std=c++17 -lstdc++
 
-MPICXX=mpic++
+MPICXX=mpic++ -std=c++17 -lstdc++
 
 CXX_OPT= -g -I "./include" -Wall -Wextra -O2 -std=c++17
 
