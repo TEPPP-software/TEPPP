@@ -16,7 +16,7 @@ MKDIR=mkdir -p ./obj
 
 MKDIR_BUILD=mkdir -p ./build
 
-TARGET=convertor ./build/jones ./build/jones_scan ./build/lk ./build/lk_scan ./build/periodic_lk ./build/periodic_wr ./build/wr ./build/wr_scan ./build/jones_mpi ./build/lk_mpi ./build/lk_scan_mpi ./build/periodic_lk_mpi ./build/periodic_wr_mpi ./build/wr_mpi ./build/wr_scan_mpi
+TARGET=convertor ./build/jones ./build/jones_scan ./build/lk ./build/lk_scan ./build/periodic_lk ./build/periodic_wr ./build/wr ./build/wr_scan ./build/jones_mpi ./build/lk_mpi ./build/lk_scan_mpi ./build/periodic_lk_mpi ./build/periodic_wr_mpi ./build/wr_mpi ./build/wr_scan_mpi	./build/jones_scan_mpi
 
 DCD_TARGET=convertor
 
@@ -24,7 +24,7 @@ TEMP_TARGET=convertor ./build/jones
 
 SERIAL_TARGET=convertor ./build/jones ./build/jones_scan ./build/lk ./build/lk_scan ./build/periodic_lk ./build/periodic_wr ./build/wr ./build/wr_scan
 
-MPI_TARGET=convertor ./build/jones_mpi ./build/lk_mpi ./build/lk_scan_mpi ./build/periodic_lk_mpi ./build/periodic_wr_mpi ./build/wr_mpi ./build/wr_scan_mpi
+MPI_TARGET=convertor ./build/jones_mpi ./build/lk_mpi ./build/lk_scan_mpi ./build/periodic_lk_mpi ./build/periodic_wr_mpi ./build/wr_mpi ./build/wr_scan_mpi	./build/jones_scan_mpi
 
 
 #################################################################
@@ -94,6 +94,10 @@ mpi:$(MPI_TARGET)
 ./build/wr_scan_mpi:main/wr_scan_mpi.cpp
 	@$(MKDIR_BUILD)
 	$(MPICXX) $? -o $@
+./build/jones_scan_mpi:main/jones_scan_mpi.cpp
+	@$(MKDIR_BUILD)
+	$(MPICXX) $? -o $@
+
 
 # Remove all object files, executables, and the converted directory
 # See the following stackoverflow posts for more information on the loops below:
