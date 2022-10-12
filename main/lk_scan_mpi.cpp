@@ -1,32 +1,57 @@
-#include "../include/funcs.h"
-#include "mpi.h"
+/* -*- -*- ----------------------------------------------------------
+   TEPPP: Topological Entanglement in Polymers, Proteins and Periodic structures
+   https://github.com/TEPPP-software/TEPPP.git
+   Eleni Panagiotou, epanagio@asu.edu
 
+   Copyright (2021) Eleni Panagiotou This software is distributed under
+   the BSD 3-Clause License.
+
+   See the README file in the top-level TEPPP directory.
+   Contributors: Tom Herschberg, Kyle Pifer and Eleni Panagiotou
+------------------------------------------------------------------------- */
+
+
+#include <filesystem>
+#include "mpi.h"
+#include "../include/funcs.h"
+namespace fs = std::filesystem;
 using namespace std;
+
+
+/* -*- -*- ----------------------------------------------------------
+   Takes as input the filename, the number of chains, the length of the chains, the starting interval, the end interval, the step size and the box dimension (optional)
+   If the box dimension is not specified, or if it is equal to 0, then the system is not periodic and the coordinates are unwrapped. 
+   If a non-zero box-dimension is specified, the coordinates are unwrapped, according to the PBC.
+   Returns the Gauss linking integral of each two intervals of two chains
+
+------------------------------------------------------------------------- */
+
+
 
 int main(int argc, char* argv[])
 {
 	if (argc < 7)
 	{
 		cout << "Not enough parameters! Exiting...\n";
-		return 0;
+		return -1;
 	}
 
-	MPI_Init(&argc, &argv);
-	int rank, size;
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        MPI_Init(&argc, &argv);
+        int rank, size;
+        MPI_Comm_size(MPI_COMM_WORLD, &size);
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	int chain_length = stoi(argv[2]);
 	int num_chains = stoi(argv[3]);
 	int start_chunk = stoi(argv[4]);
 	int end_chunk = stoi(argv[5]);
 	int step = stoi(argv[6]);
-	int chunk = num_chains / size;
 	double box_dim;
 	if (argc >= 8)
 		box_dim = stod(argv[7]);
 	else
 		box_dim = 0;
+        int chunk = num_chains / size;
 	int num;
 	double** coords;
 	if (box_dim == 0)
@@ -37,18 +62,24 @@ int main(int argc, char* argv[])
 	{
 		coords = read_coords(argv[1], &num, chain_length, box_dim);
 	}
-	create_output_dir();
-	string file_name = "lk_scan_mpi_out_" + to_string(rank) + ".txt";
-	if (!fs::exists("./output/lk_scan_mpi"))
-	{
-		cout << "Creating lk_scan_mpi directory..." << endl;
-		fs::create_directory("./output/lk_scan_mpi");
-	}
-	ofstream outfile;
-	outfile.open("./output/lk_scan_mpi/" + file_name);
+        create_output_dir();
+        string file_name = "lk_scan_mpi_out_" + to_string(rank) + ".txt";
+        if (!fs::exists("./output/lk_scan_mpi"))
+        {
+                cout << "Creating lk_scan_mpi directory..." << endl;
+                fs::create_directory("./output/lk_scan_mpi");
+        }
+        ofstream outfile;
+        outfile.open("./output/lk_scan_mpi/" + file_name);
+	//create_output_dir();
+	//ofstream outfile;
+	//outfile.open("./output/lk_scan_out.txt");
 
-	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
+	for (int i = rank*chunk; i < (rank+1)*chunk; i++)
 	{
+		/**
+		 *  Creating the entire chain1
+		 */
 		double** chain1 = new double*[chain_length];
 		for (int j = 0; j < chain_length; j++)
 		{
@@ -57,12 +88,15 @@ int main(int argc, char* argv[])
 			chain1[j][1] = coords[j + (i * chain_length)][1];
 			chain1[j][2] = coords[j + (i * chain_length)][2];
 		}
-
-		for (int j = 0; j < num_chains; j++)
+		/**
+		 *  Creating the entire chain2
+		 */
+		for (int j = i + 1; j < num_chains; j++)
 		{
-			if (i == j)
-				continue;
 			double** chain2 = new double*[chain_length];
+			/**
+			 *  Scanning along both chains
+			 */
 			for (int k = 0; k < chain_length; k++)
 			{
 				chain2[k] = new double[3];
@@ -71,6 +105,10 @@ int main(int argc, char* argv[])
 				chain2[k][2] = coords[k + (j * chain_length)][2];
 			}
 
+			/**
+			 *  a is the scanning length which varies from start_chunk to end_chunk with a step size of
+			 * step
+			 */
 			for (int a = start_chunk; a <= end_chunk; a += step)
 			{
 				double** temp_chain1 = new double*[a];
@@ -80,6 +118,9 @@ int main(int argc, char* argv[])
 				}
 				for (int b = 0; b < chain_length - a; b++)
 				{
+					/**
+					 *  Scanning along chain1
+					 */
 					for (int c = 0; c < a; c++)
 					{
 						temp_chain1[c][0] = chain1[b + c][0];
@@ -94,6 +135,9 @@ int main(int argc, char* argv[])
 					}
 					for (int e = 0; e < chain_length - a; e++)
 					{
+						/**
+						 *  Scanning along chain2
+						 */
 						for (int f = 0; f < a; f++)
 						{
 							temp_chain2[f][0] = chain2[e + f][0];
@@ -101,6 +145,9 @@ int main(int argc, char* argv[])
 							temp_chain2[f][2] = chain2[e + f][2];
 						}
 
+						/**
+						 *  Calculating the LK between the two scanning instances
+						 */
 						double res = lk(temp_chain1, temp_chain2, a, a, false);
 						outfile << "linking number between chains " << i << " starting at atom " << b << " and " << j
 								<< " starting at atom " << e << " with chunk length " << a << ": " << res << "\n";
@@ -120,7 +167,6 @@ int main(int argc, char* argv[])
 
 	delete_array(coords, num_chains);
 	outfile.close();
-
-	MPI_Finalize();
+        MPI_Finalize();
 	return 0;
 }

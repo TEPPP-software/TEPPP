@@ -17,6 +17,12 @@
 namespace fs = std::filesystem;
 using namespace std;
 
+
+
+
+//random number generator
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -128,7 +134,7 @@ extern "C"
 					sum += vector[i + 1] * vector[i + 1];
 				}
 			}
-		} while (sum == 0.0); /* While extremely unlikely, it is possible to pick a zero vector. AVOID! */
+		} while (sum == 0.0);
 
 		/* Convert to a unit vector by dividing through by the length. */
 		sum = sqrt(sum);
@@ -179,7 +185,7 @@ void sub3(const double* v1, const double* v2, double* ans);
 bool intersect(double* p1, double* q1, double* p2, double* q2);
 bool are_collinear(vector<double> p1, vector<double> p2, vector<double> p3, vector<double> p4);
 bool intersect1(vector<double> p0, vector<double> p1, vector<double> p2, vector<double> p3, double* rx, double* ry);
-bool has_mult_crossings(vector<vector<int>> crossings);
+map<int,vector<int>> has_mult_crossings(int n, vector<vector<int>> crossings, bool is_closed);
 
 int count_loops(vector<vector<int>> neigh_array, int n);
 
@@ -205,6 +211,9 @@ map<int, double> simple_mult(map<int, double> a, map<int, double> b);
 
 vector<vector<int>> generate_neigh_array(int n, bool closed);
 vector<vector<int>> compute_img(double** coords, int n, vector<double> box_dims);
+vector<vector<int>> compute_periodic_img(vector<vector<int>> cells, double** coords, int n, vector<double> box_dims);
+//vector<vector<double>> 
+double** translation(double** coords,int n,  vector<int> translation_vector, vector<double> box_dims );
 vector<vector<int>>
 count_crossings(vector<vector<int>> neigh_array, vector<vector<double>> proj, int n, bool count_all);
 vector<vector<int>> reduce_crossings(vector<vector<int>> initial_crossings, vector<vector<double>> coords);
@@ -216,6 +225,10 @@ vector<vector<double>> get_proj(vector<vector<double>> coords, int n);
 
 Struct next_mult_crossings(
 	vector<vector<double>> proj, vector<vector<double>> coords, vector<vector<int>> neigh_array, int n, bool is_closed);
+
+Struct mult_crossings(
+        vector<vector<double>> proj, vector<vector<double>> coords, vector<vector<int>> neigh_array, vector<vector<int>> before_cross, int n, bool is_closed);
+
 
 vector<int> find_knot(map<int, double> poly, vector<string> params);
 
@@ -330,7 +343,7 @@ bool intersect1(vector<double> p0, vector<double> p1, vector<double> p2, vector<
 	s2_y = p3[1] - p2[1];
 
 	double det = -s2_x * s1_y + s1_x * s2_y;
-	if (abs(det) < 0.0001)
+	if (abs(det) == 0.0)
 		return false;
 	double s, t;
 	s = (-s1_y * (p0[0] - p2[0]) + s1_x * (p0[1] - p2[1])) / det;
@@ -355,25 +368,92 @@ bool intersect1(vector<double> p0, vector<double> p1, vector<double> p2, vector<
 }
 
 /**
- * Checks if there is an edge that intersects with more than one other edge
+ * Creates a list of edges that each edge intersects
  *
  * @param crossings Vector of vectors each containing the indices of four points that form two crossing edges
- * @return true if there is an edge that intesects more than one other edge, false if not
+ * @return mult: the list of edges that each edge intersects
  */
-bool has_mult_crossings(vector<vector<int>> crossings)
+map<int, vector<int>>  has_mult_crossings(int n,vector<vector<int>> crossings, bool is_closed)
 {
 	map<int, bool> found;
-	for (int i = 0; i < crossings.size(); i++)
-	{
-		if (found.find(crossings[i][0]) != found.end() || found.find(crossings[i][2]) != found.end())
-			return true;
-		found[crossings[i][0]] = true;
-		found[crossings[i][2]] = true;
-	}
+        map<int, bool> found2;
+        map<int, vector<int>> mult;
+        int last = n;
+        if (is_closed)
+        {
+           last=n+1;
+        }
+        else
+        {
+           last=n;
+        }
+        for (int i=0;i<last;i++)
+        {
+                mult[i]={i};
+                found[i]=false;
+                found2[i]=false;       
+        }
+        
 
-	return false;
+        vector<vector<int>> cross3;
+	for (int i = 0; i < last; i++) 
+	{
+             
+                vector<int> cross;
+                vector<int> cross2; 
+                int a = i;
+                vector<int> crosslist;
+                for (int j=0; j<crossings.size();j++)
+                {
+                      int c=crossings[j][0];
+                      int d=crossings[j][2];
+                      if (a==c)
+                         
+                         cross.push_back(d);
+                                        
+                      if (a==d)
+                         
+                         cross.push_back(c);
+                                 
+                }
+                mult[i]=cross;
+                
+                
+	}
+  
+        
+        for(auto itr = mult.begin(); itr != mult.end(); itr++) 
+        {
+             int i = itr->first;
+             //cout<<"length "<< mult[i].size()<<"\n";
+             
+        }
+        cout << endl;
+
+	return mult;
 }
 
+
+/**
+ * Checks if there is an edge that intersects with more than one other edge
+ *
+ * @param mult contains the list of edges each edge intersect
+ * @return true if there is an edge that intesects more than one other edge, false if not
+ */
+
+
+bool mult_cross(int n,vector<vector<int>> crossings, bool is_closed)
+{
+  map<int, vector<int>> mult=has_mult_crossings(n,crossings,is_closed);
+  bool res=false;
+  for (int i=0;i<mult.size();i++)
+  {
+     if (mult[i].size()>1)
+        res=true;
+  }
+
+  return res;
+}
 /**
  * Counts the number of loops formed by order of atoms in neigh_array.
  * Used to calculate the bracket polynomial of each combination of crossing annealments.
@@ -586,7 +666,8 @@ double wr(double** chain, int length, bool is_closed)
 				p4.push_back(chain[j + 1][1]);
 				p4.push_back(chain[j + 1][2]);
 			}
-
+                        double lwr=compute_one(p1,p2,p3,p4);
+                        //cout<<"EDGE "<<i<<" and EDGE "<< j<<"WRITHE = "<<lwr<<"\n";
 			result += compute_one(p1, p2, p3, p4);
 		}
 	}
@@ -730,7 +811,7 @@ vector<vector<double>> get_random_proj()
 	{
 		temp.push_back(rvector[i]);
 	}
-	// cout << rvector[0] << ", " << rvector[1] << ", " << rvector[2] << "\n";
+	
 	matrix.push_back(temp);
 	while (1)
 	{
@@ -740,7 +821,7 @@ vector<vector<double>> get_random_proj()
 		cross3(rvector, vec, cross);
 		if (abs(cross[0]) > 0.0001 || abs(cross[1]) > 0.0001 || abs(cross[2]) > 0.0001)
 		{
-			// cout << "cross1: " << cross[0] << ", " << cross[1] << ", " << cross[2] << "\n";
+			
 			vector<double> temp1;
 			for (int i = 0; i < 3; i++)
 			{
@@ -764,7 +845,7 @@ vector<vector<double>> get_random_proj()
 		cross3(rvector, vec, cross);
 		if (abs(cross[0]) > 0.0001 || abs(cross[1]) > 0.0001 || abs(cross[2]) > 0.0001)
 		{
-			// cout << "cross2: " << cross[0] << ", " << cross[1] << ", " << cross[2] << "\n";
+			
 			vector<double> temp2;
 			for (int i = 0; i < 3; i++)
 			{
@@ -920,8 +1001,8 @@ vector<vector<int>> generate_neigh_array(int n, bool closed)
 }
 
 /**
- * Calculates all of the different images that contain an atom from the given system.
- * Images are represented by a vector containing the x, y, and z image flags.
+ * Finds all the cells that the parent image of a chain intersects.
+ * Cells are represented by a vector containing the x, y, and z image flags.
  * The final results contains a vector of all the cells that the parent image intersects.
  *
  * @param coords The coordinates of the system to find the images of
@@ -938,9 +1019,9 @@ vector<vector<int>> compute_img(double** coords, int n, vector<double> box_dims)
 		 * We assume input chains (unfolded) in an orgin centered box
 		 *
 		 */
-		int ximg = round(coords[i][0] / (2 * box_dims[0]));
-		int yimg = round(coords[i][1] / (2 * box_dims[1]));
-		int zimg = round(coords[i][2] / (2 * box_dims[2]));
+		int ximg = round(coords[i][0] / (box_dims[0]));
+		int yimg = round(coords[i][1] / (box_dims[1]));
+		int zimg = round(coords[i][2] / (box_dims[2]));
 		vector<int> temp = {ximg, yimg, zimg};
 		bool found = false;
 		for (auto vec: result)
@@ -960,8 +1041,99 @@ vector<vector<int>> compute_img(double** coords, int n, vector<double> box_dims)
 	return result;
 }
 
+
+
+
 /**
- * Counts the number of intersections between edges in a given system.
+ * Finds all the images that intersect all the cells that the parent image of a chain intersects.
+ * Images are represented by a vector containing the x, y, and z image flags.
+ * The final results contains a vector of all the images that intersect the cells in which the parent image lies in.
+ *
+ * @param cells The cells that the parent image of a chain intersects
+ * @param coords The coordinates of the system to find the images of
+ * @param n The number of atoms in the system
+ * @param box_dims The dimensions of the periodic box
+ * @return A vector of vectors each containing a unique image used by the given system
+ */
+
+
+
+vector<vector<int>> compute_periodic_img(vector<vector<int>> cells, double** coords, int n, vector<double> box_dims)
+{
+        vector<vector<int>> result;
+        for (int i = 0; i < cells.size()-1; i++)
+        {
+            for(int j=i+1; j<cells.size();j++)   
+                {
+                /**
+                 * We assume input chains (unfolded) in an orgin centered box
+                 *
+                 */
+                int ximg = -1*cells[i][0]+cells[j][0];
+                int yimg = -1*cells[i][1]+cells[j][1];
+                int zimg = -1*cells[i][2]+cells[j][2];
+                vector<int> temp = {ximg, yimg, zimg};
+                bool found = false;
+                for (auto vec: result)
+                {
+                        if (vec == temp)
+                        {
+                                found = true;
+                                break;
+                        }
+                }
+                if (!found)
+                {
+                        result.push_back(temp);
+                }
+                }
+        }
+
+        return result;
+}
+
+
+
+
+/**
+ * Translates a chain by a given vector
+ * The final result is the coordinates of the translated chain.
+ *
+ * @param coords The coordinates of a chain
+ * @param n The number of atoms in the system
+ * @param translation_vector The vector by which we translate the chain
+ * @param box_dims The dimensions of the periodic box
+ * @return The coordinates of the translated chain
+ */
+
+
+
+//vector<vector<double>> 
+double** translation(double** coords,int n,  vector<int> translation_vector , vector<double> box_dims)
+{
+  //vector<vector<double>> result;
+  vector<vector<double>> temp_result;
+  for (int i=0; i<n;i++)
+  {
+     double ximg = (coords[i][0]+translation_vector[0])*box_dims[0];
+     double yimg = (coords[i][1]+translation_vector[1])*box_dims[1];
+     double zimg = (coords[i][2]+translation_vector[2])*box_dims[2];
+     vector<double> temp = {ximg, yimg, zimg};
+     temp_result.push_back(temp);
+  }
+  double** result = new double*[temp_result.size()];
+  for (int i = 0; i < temp_result.size(); i++)
+  {
+       result[i] = new double[3];
+       copy(temp_result[i].begin(), temp_result[i].end(), result[i]);
+  }
+   
+  return result;
+
+}
+
+/**
+ * Counts the number of crossings in a projection
  *
  * @param neigh_array A vector of vectors containing each atom's neighboring atoms
  * @param proj The projected coordinates of the system to count the crossings of
@@ -969,15 +1141,13 @@ vector<vector<int>> compute_img(double** coords, int n, vector<double> box_dims)
  * @param count_all True if the last atom in the system is connected to the first, false otherwise
  * @return A vector of vectors each containing 4 atoms that form two intersecting edges
  */
-vector<vector<int>> count_crossings(vector<vector<int>> neigh_array, vector<vector<double>> proj, int n, bool count_all)
+vector<vector<int>> count_crossings(vector<vector<int>> neigh_array, vector<vector<double>> proj, int n, bool is_closed)
 {
 	int count = 0;
 	vector<vector<int>> res;
+        vector<vector<int>> final_res;
 	int lasti, lastj;
-	if (count_all)
-		lasti = n;
-	else
-		lasti = n - 2;
+        lasti = n-2;
 	map<int, vector<vector<int>>> order;
 	map<int, vector<double>> distances;
 
@@ -985,10 +1155,7 @@ vector<vector<int>> count_crossings(vector<vector<int>> neigh_array, vector<vect
 	{
 		if (neigh_array[i][1] < 0)
 			continue;
-		if (count_all)
-			lastj = n + i;
-		else
-			lastj = n;
+                lastj = n;
 		for (int j = i + 2; j < lastj; j++)
 		{
 			int p2 = j % n;
@@ -1044,7 +1211,6 @@ vector<vector<int>> count_crossings(vector<vector<int>> neigh_array, vector<vect
 			res.push_back(order[i][j]);
 		}
 	}
-
 	return res;
 }
 
@@ -1067,7 +1233,7 @@ vector<vector<int>> reduce_crossings(vector<vector<int>> initial_crossings, vect
 	vector<vector<int>> temp_result;
 	vector<int> remove_crossings;
 	int count = 0;
-	bool boolarray[init_crossings];
+	bool boolarray[init_crossings];  
 	for (int i = 0; i < init_crossings; i++)
 	{
 		boolarray[i] = true;
@@ -1075,6 +1241,7 @@ vector<vector<int>> reduce_crossings(vector<vector<int>> initial_crossings, vect
 	int p11, p12, p13, p14, p21, p22, p23, p24, p31, p32, p33, p34;
 	for (int i = 0; i < initial_crossings.size(); i++)
 	{
+                
 		bool found = false;
 		if (find(remove_crossings.begin(), remove_crossings.end(), i) != remove_crossings.end())
 			continue;
@@ -1091,6 +1258,7 @@ vector<vector<int>> reduce_crossings(vector<vector<int>> initial_crossings, vect
 			coords[initial_crossings[i][3]]);
 		for (int j = i + 1; j < initial_crossings.size(); j++)
 		{
+                        
 			found = false;
 			if (find(remove_crossings.begin(), remove_crossings.end(), j) != remove_crossings.end())
 				continue;
@@ -1101,14 +1269,17 @@ vector<vector<int>> reduce_crossings(vector<vector<int>> initial_crossings, vect
 				coords[initial_crossings[j][1]],
 				coords[initial_crossings[j][2]],
 				coords[initial_crossings[j][3]]);
+                        
 			if ((wr1 < 0 && wr2 < 0) || wr1 > 0 && wr2 > 0)
 				found = true;
+                                
 			if (found)
 				continue;
 			p21 = initial_crossings[j][0];
 			p22 = initial_crossings[j][1];
 			p23 = initial_crossings[j][2];
 			p24 = initial_crossings[j][3];
+          
 			if (p12 == p21 && (p14 == p23 || p24 == p13))
 			{
 				remove_crossings.push_back(i);
@@ -1316,6 +1487,7 @@ vector<vector<double>> get_proj(vector<vector<double>> coords, int n)
 
 	return result;
 }
+ 
 
 /**
  * Finds edges that have intersect multiple other edges and breaks such edges so that
@@ -1329,137 +1501,148 @@ vector<vector<double>> get_proj(vector<vector<double>> coords, int n)
  * @return A struct containing the new projected coordinates, actual coordinates, and vector of crossings after all
  * edges with multiple crossings have been split
  */
-Struct next_mult_crossings(
-	vector<vector<double>> proj, vector<vector<double>> coords, vector<vector<int>> neigh_array, int n, bool is_closed)
+Struct mult_crossings(
+        vector<vector<double>> proj, vector<vector<double>> coords, vector<vector<int>> neigh_array, vector<vector<int>> before_cross, int n, bool is_closed)
 {
-	int last = -1;
-	int off = 0;
-	int last_off = 0;
-	int temp_off;
-	map<int, int> offmap;
-	map<int, int> same_crossing;
-	map<int, vector<vector<double>>> crossings;
-	vector<vector<int>> before_cross = count_crossings(neigh_array, proj, proj.size(), true);
-	for (int i = 0; i < before_cross.size(); i++)
-	{
-		for (int j = i + 1; j < before_cross.size(); j++)
-		{
-			if (before_cross[i][0] == before_cross[j][2] && before_cross[j][0] == before_cross[i][2])
-			{
-				same_crossing[i] = j;
-			}
-		}
-	}
-	for (int i = 0; i < before_cross.size(); i++)
-	{
-		vector<double> temp = get_intersection(
-			proj[before_cross[i][0]], proj[before_cross[i][1]], proj[before_cross[i][2]], proj[before_cross[i][3]]);
-		if (before_cross[i][0] < before_cross[i][2])
-		{
-			crossings[before_cross[i][0]].push_back(temp);
-			crossings[before_cross[i][2]].push_back(temp);
-		}
-		if (before_cross[i][0] == last)
-		{
-			temp_off++;
-			before_cross[i][0] += temp_off;
-			before_cross[i][1] += temp_off;
-			off++;
-			offmap[i] = last_off;
-		}
-		else
-		{
-			last = before_cross[i][0];
-			last_off = off;
-			offmap[i] = off;
-			temp_off = 0;
-		}
-		if (before_cross[i][0] - temp_off == proj.size() - 1)
-			before_cross[i][1] += proj.size();
-	}
-	for (int i = 0; i < before_cross.size(); i++)
-	{
-		before_cross[i][0] = (before_cross[i][0] + offmap[i]) % (proj.size() + off);
-		before_cross[i][1] = (before_cross[i][1] + offmap[i]) % (proj.size() + off);
-	}
-	vector<vector<int>> new_cross;
-	for (auto it = same_crossing.begin(); it != same_crossing.end(); it++)
-	{
-		new_cross.push_back(
-			{before_cross[it->first][0],
-			 before_cross[it->first][1],
-			 before_cross[it->second][0],
-			 before_cross[it->second][1]});
-	}
+        int last = -1;
+        int off = 0;
+        int last_off = 0;
+        int temp_off;
+        map<int, int> offmap;
+        map<int, int> same_crossing;
+        int offset=0;
+        vector<vector<double>> new_proj;
+        vector<vector<double>> new_coords; 
+        vector<vector<int>> new_before_cross;
+        int lastedge=n;
+        
+        
+        map<int, vector<int>> multiple_crossings = has_mult_crossings(n,before_cross,is_closed); 
+         
+        vector<vector<int>> new_cross; 
+        vector<int> splitat;    
+        vector<int> countm;
+        for (int k=0;k<lastedge;k++)
+        {
+           
+            vector<double> fcr;
+            vector<double> distances;
+            new_proj.push_back(proj[k]);
+            new_coords.push_back(coords[k]);
+            if (multiple_crossings[k].size()<2)
+               countm.push_back(1);
+            if (multiple_crossings[k].size()>1)
+            {
+               
+               int ls=multiple_crossings.size();
+               countm.push_back(ls);
+               vector<vector<double>> crossings;
+               int next_p = k + 1;
+               if (k==n-1)
+                   next_p=0;
+               for (int s=0; s < multiple_crossings[k].size();s++)
+               {
+                   
+                   int lv=multiple_crossings[k][s];
+                   int lvn;
+                   if (lv==n-1)
+                   {
+                      lvn=0;
+                   }
+                   else
+                   {
+                      lvn=lv+1;
+                   }
+                   
+                   vector<double> temp = get_intersection( proj[k], proj[next_p], proj[lv], proj[lvn]);
+                   crossings.push_back(temp);
+                   double dist=distance(proj[k],temp);
+                   
+                   if (s==0)
+                   {
+                      
+                      fcr.insert(fcr.begin()+0,0);
+                      distances.insert(distances.begin()+0,dist);
+                      
+                   }
+                   else
+                   {
+                      if (dist<distances[0])
+                      {
+                         auto a=0;
+                         
+                         fcr.insert(fcr.begin()+0,s);
+                         distances.insert(distances.begin()+0,dist);
+                      }
+                      else
+                      {
+                         if (dist>distances[distances.size()-1])
+                         {
+                            int r=distances.size();
+                            
+                            fcr.insert(fcr.begin()+r, s);
+                            distances.insert(distances.begin()+r,dist);
+                         }
+                         else
+                         {
+                            for (int h=1;h<distances.size();h++)
+                            {
+                           
+                               auto a=h;
+                               if ((dist<=distances[h]) and (dist>distances[h-1]))
+                               {
+                                  
+                                  fcr.insert(fcr.begin()+h, s);
+                                  distances.insert(distances.begin()+h,dist);
+                                  
+                                  break;
+                               }
+                            }
+                         }
+                      }
+                   }
+                   
+                   
+                   
+               }
+               
+               
+               for (int t=1; t < multiple_crossings[k].size();t++)
+               {       
+                   int s = fcr[t];
+                   int u = fcr[t-1];
+                   
+                   double newx2 = crossings[u][0] + ((crossings[s][0] - crossings[u][0]) / 2);
+                   double newy2 = crossings[u][1] + ((crossings[s][1] - crossings[u][1]) / 2);
+                   double newx_coords
+                                        = coords[k][0] + (t) * ((coords[next_p][0] - coords[k][0]) / multiple_crossings[k].size());
+                   double newy_coords
+                                        = coords[k][1] + (t) * ((coords[next_p][1] - coords[k][1]) / multiple_crossings[k].size());
+                   double newz_coords
+                                        = coords[k][2] + (t) * ((coords[next_p][2] - coords[k][2]) / multiple_crossings[k].size());
+                   
+                      
+                   vector<double> pnt = {newx2, newy2};
+                   new_proj.push_back(pnt);
+                   new_coords.push_back({newx_coords, newy_coords, newz_coords});
+                   
+                               
+               }
+            }
+        }
+        
+        
+        Struct final;
+        final.coords = new_coords;
+        final.proj = new_proj;
+        final.success = true;
+        return final;
 
-	vector<vector<double>> new_proj = proj;
-	vector<vector<double>> new_coords = coords;
-	vector<int> offset_vec;
-	vector<vector<double>> org_crossings;
-	int offset = 0;
-
-	vector<vector<int>> final_cross;
-	offset = 0;
-	int num_above_one = 0;
-	bool found_above_four = false;
-	if (num_above_one > crossings.size() / 4 || found_above_four)
-	{
-		Struct error;
-		error.success = false;
-		cout << "too many multiple crossing edges\n";
-		return error;
-	}
-
-	int num_above_thres = 0;
-	for (auto it = crossings.begin(); it != crossings.end(); it++)
-	{
-		int i = it->first;
-		if (crossings[i].size() >= 2)
-		{
-			if (crossings[i].size() > 2)
-				num_above_thres++;
-			for (int j = 0; j < crossings[i].size() - 1; j++)
-			{
-				auto iter = new_proj.begin() + i + offset + 1;
-				auto coords_iter = new_coords.begin() + i + offset + 1;
-				int next_p = i + 1;
-				if (i + 1 == n && neigh_array[i][1] == -1)
-					continue;
-				if (i + 1 == n)
-					next_p = 0;
-				double newx = crossings[i][j][0] + ((crossings[i][j + 1][0] - crossings[i][j][0]) / 2);
-				double newy = crossings[i][j][1] + ((crossings[i][j + 1][1] - crossings[i][j][1]) / 2);
-				double newx_coords
-					= coords[i][0] + (j + 1) * ((coords[next_p][0] - coords[i][0]) / crossings[i].size());
-				double newy_coords
-					= coords[i][1] + (j + 1) * ((coords[next_p][1] - coords[i][1]) / crossings[i].size());
-				double newz_coords
-					= coords[i][2] + (j + 1) * ((coords[next_p][2] - coords[i][2]) / crossings[i].size());
-				if (proj[i].size() == 2)
-				{
-					new_proj.insert(iter, {newx, newy});
-					new_coords.insert(coords_iter, {newx_coords, newy_coords, newz_coords});
-					offset++;
-				}
-				else
-				{
-					double t = (newx - proj[i][0]) / (proj[next_p][0] - proj[i][0]);
-					double newz = proj[i][2] + ((proj[next_p][2] - proj[i][2]) * t);
-					new_proj.insert(iter, {newx, newy, newz});
-					new_coords.insert(coords_iter, {newx_coords, newy_coords, newz_coords});
-					offset++;
-				}
-			}
-		}
-	}
-
-	Struct final;
-	final.coords = new_coords;
-	final.proj = new_proj;
-	final.crossings = new_cross;
-	final.success = true;
-	return final;
 }
+
+
+
+
 
 /**
  * Checks the given polynomial to see if it matches the polynomial of the given knot type(s).

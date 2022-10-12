@@ -1,4 +1,24 @@
+/* -*- -*- ----------------------------------------------------------
+   TEPPP: Topological Entanglement in Polymers, Proteins and Periodic structures
+   https://github.com/TEPPP-software/TEPPP.git
+   Eleni Panagiotou, epanagio@asu.edu
+
+   Copyright (2021) Eleni Panagiotou This software is distributed under
+   the BSD 3-Clause License.
+
+   See the README file in the top-level TEPPP directory.
+   Contributors: Tom Herschberg, Kyle Pifer and Eleni Panagiotou
+------------------------------------------------------------------------- */
+
 #include "../include/funcs.h"
+
+/* -*- -*- ----------------------------------------------------------
+   Takes as input the filename, the number of chains, the length of the chains, integer 0/1 statement (depending on whether the chains are closed, i.e. rings, or open, i.e. linear, 0: ring, 1: linear) and the box dimension (optional)
+   If the box dimension is not specified, or if it is equal to 0, then the system is not periodic and the coordinates are unwrapped. 
+   If a non-zero box-dimension is specified, the coordinates are unwrapped, according to the PBC.
+   Returns the writhe of each chain
+   Last line returns the mean absolute writhe over all chains
+------------------------------------------------------------------------- */
 
 using namespace std;
 
@@ -7,8 +27,10 @@ int main(int argc, char* argv[])
 	int num_chains = stoi(argv[3]);
 	int chain_length = stoi(argv[2]);
 	double box_dim;
-	if (argc >= 5)
-		box_dim = stod(argv[4]);
+        bool is_closed;
+        int ringlinear = stoi(argv[4]);
+	if (argc >= 6)
+		box_dim = stod(argv[5]);
 	else
 		box_dim = 0;
 	int num;
@@ -26,7 +48,14 @@ int main(int argc, char* argv[])
 	int count = 0;
 	double sum = 0;
 	outfile.open("./output/wr_out.txt");
-
+        if (ringlinear==0)
+        {
+           is_closed = true;
+        }
+        else
+        { 
+           is_closed = false;
+        }
 	for (int i = 0; i < num_chains; i++)
 	{
 		double** chain1 = new double*[chain_length];
@@ -38,7 +67,7 @@ int main(int argc, char* argv[])
 			chain1[j][2] = coords[j + (i * chain_length)][2];
 		}
 
-		double res = wr(chain1, chain_length, true);
+		double res = wr(chain1, chain_length, is_closed);
 		outfile << res << "\n";
 		sum += abs(res);
 		count++;
@@ -47,7 +76,7 @@ int main(int argc, char* argv[])
 
 	delete_array(coords, num_chains);
 	outfile.close();
-	// cout << "Absolute avg wr: " << sum / count << "\n";
+	cout << "Absolute avg wr: " << sum / count << "\n";
 
 	return 0;
 }

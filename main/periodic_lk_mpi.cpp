@@ -1,39 +1,65 @@
+/* -*- -*- ----------------------------------------------------------
+   TEPPP: Topological Entanglement in Polymers, Proteins and Periodic structures
+   https://github.com/TEPPP-software/TEPPP.git
+   Eleni Panagiotou, epanagio@asu.edu
+
+   Copyright (2021) Eleni Panagiotou This software is distributed under
+   the BSD 3-Clause License.
+
+   See the README file in the top-level TEPPP directory.
+   Contributors: Tom Herschberg, Kyle Pifer and Eleni Panagiotou
+------------------------------------------------------------------------- */
 #include "../include/funcs.h"
 #include "mpi.h"
-
 using namespace std;
 
+/*Takes as input the filename, the chain length, the numebr of chains, 0/1: 0 for ring, 1 for linear, box dimensions
+Returns the periodic linking number between each pair of chains.
+*/
 int main(int argc, char* argv[])
 {
-	MPI_Init(&argc, &argv);
-	int rank, size;
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        MPI_Init(&argc, &argv);
+        int rank, size;
+        MPI_Comm_size(MPI_COMM_WORLD, &size);
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	int num_chains = stoi(argv[3]);
 	int chain_length = stoi(argv[2]);
-	int chunk = num_chains / size;
+        int ringlinear=stoi(argv[4]);
 	double box_dim;
-	if (argc >= 5)
-		box_dim = stod(argv[4]);
+        bool is_closed;
+	if (argc >= 6)
+		box_dim = stod(argv[5]);
 	else
 		box_dim = 0;
 	vector<double> box_dims = {box_dim, box_dim, box_dim};
+        if (ringlinear==0)
+        {
+           is_closed=true;
+        }  
+        else
+        {
+           is_closed=false;
+        }
+        int chunk = num_chains / size;
 	int num;
 	double** coords = read_coords(argv[1], &num);
 	double result[chunk][num_chains];
 	create_output_dir();
 	string file_name = to_string(chain_length) + "_periodic_lk_mpi_out_" + to_string(rank) + ".txt";
-	if (!fs::exists("./output/periodic_lk_mpi"))
-	{
-		cout << "Creating periodic_lk_mpi directory..." << endl;
-		fs::create_directory("./output/periodic_lk_mpi");
-	}
-	ofstream outfile;
-	outfile.open("./output/periodic_lk_mpi/" + file_name);
+        if (!fs::exists("./output/periodic_lk_mpi"))
+        {
+                cout << "Creating periodic_lk_mpi directory..." << endl;
+                fs::create_directory("./output/periodic_lk_mpi");
+        }
+        ofstream outfile;
+        outfile.open("./output/periodic_lk_mpi/" + file_name);
+        //ofstream outfile;
+	//outfile.open("./output/periodic_lk_out.txt");
 
-	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
+	for (int i = rank*chunk; i < (rank+1)*chunk; i++)
 	{
-		result[i - (rank * chunk)][i] = 0;
+		result[i-(rank*chunk)][i] = 0;
 		double** chain1 = new double*[chain_length];
 		for (int j = 0; j < chain_length; j++)
 		{
@@ -42,13 +68,11 @@ int main(int argc, char* argv[])
 			chain1[j][1] = coords[j + (i * chain_length)][1];
 			chain1[j][2] = coords[j + (i * chain_length)][2];
 		}
-
+		// Images1 is the cells that chain1 intersects
 		vector<vector<int>> images1 = compute_img(chain1, chain_length, box_dims);
 
-		for (int j = 0; j < num_chains; j++)
+		for (int j = i + 1; j < num_chains; j++)
 		{
-			if (i == j)
-				continue;
 			double** chain2 = new double*[chain_length];
 			for (int k = 0; k < chain_length; k++)
 			{
@@ -58,6 +82,7 @@ int main(int argc, char* argv[])
 				chain2[k][2] = coords[k + (j * chain_length)][2];
 			}
 
+			// Images2 is the cells that chain2 intersects
 			vector<vector<int>> images2 = compute_img(chain2, chain_length, box_dims);
 			vector<vector<int>> trans;
 			for (int x = 0; x < images1.size(); x++)
@@ -76,6 +101,8 @@ int main(int argc, char* argv[])
 						}
 					}
 
+					// trans contains all the images of chain2 that intersect the minmal unfolding of chain1
+					// temp is one such image
 					if (!found)
 					{
 						trans.push_back(temp);
@@ -84,25 +111,26 @@ int main(int argc, char* argv[])
 							chain2,
 							chain_length,
 							chain_length,
-							false,
+							is_closed,
 							temp[0] * box_dims[0],
 							temp[1] * box_dims[1],
 							temp[2] * box_dims[2]);
-						result[i - (rank * chunk)][j] += res;
+						// at the end of the loop result[i][j] is the local periodic linking number between
+						// chain i and chain j
+						result[i-(rank*chunk)][j] += res;
 					}
 				}
 			}
 
-			outfile << result[i - (rank * chunk)][j] << "\n";
+			outfile << result[i-(rank*chunk)][j] << "\n";
 			delete_array(chain2, chain_length);
 		}
 
 		delete_array(chain1, chain_length);
 	}
-
+      
 	delete_array(coords, num_chains);
 	outfile.close();
-
-	MPI_Finalize();
+        MPI_Finalize();
 	return 0;
 }

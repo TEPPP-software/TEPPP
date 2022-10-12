@@ -1,91 +1,91 @@
+/* -*- -*- ----------------------------------------------------------
+   TEPPP: Topological Entanglement in Polymers, Proteins and Periodic structures
+   https://github.com/TEPPP-software/TEPPP.git
+   Eleni Panagiotou, epanagio@asu.edu
+
+   Copyright (2021) Eleni Panagiotou This software is distributed under
+   the BSD 3-Clause License.
+
+   See the README file in the top-level TEPPP directory.
+   Contributors: Tom Herschberg, Kyle Pifer and Eleni Panagiotou
+------------------------------------------------------------------------- */
 #include "../include/funcs.h"
 #include "mpi.h"
-
 using namespace std;
 
+/* Given the chain coordinates teh periodic box size and whether is it open or closed, returns the periodic writhe
+*/
 double periodic_wr(double** coords, int chain_length, vector<double> box_dims, bool is_closed)
 {
 	double result = 0;
 	vector<vector<int>> images = compute_img(coords, chain_length, box_dims);
-	for (int i = 0; i < images.size(); i++)
-	{
-		if (images[i][0] == 0 && images[i][1] == 0 && images[i][2] == 0)
-			continue;
-		for (int j = 0; j < chain_length; j++)
-		{
-			vector<double> p1 = {coords[j][0], coords[j][1], coords[j][2]};
-			vector<double> p2;
-			if (j + 1 < chain_length)
-			{
-				p2.push_back(coords[j + 1][0]);
-				p2.push_back(coords[j + 1][1]);
-				p2.push_back(coords[j + 1][2]);
-			}
-			else if (j + 1 == chain_length && is_closed)
-			{
-				p2.push_back(coords[0][0]);
-				p2.push_back(coords[0][1]);
-				p2.push_back(coords[0][2]);
-			}
-			else
-				continue;
-			for (int k = 0; k < chain_length; k++)
-			{
-				double deltax = images[i][0] * box_dims[0];
-				double deltay = images[i][1] * box_dims[1];
-				double deltaz = images[i][2] * box_dims[2];
-				vector<double> p3 = {coords[k][0] + deltax, coords[k][1] + deltay, coords[k][2] + deltaz};
-				vector<double> p4;
-				if (k + 1 < chain_length)
-				{
-					p4.push_back(coords[k + 1][0] + deltax);
-					p4.push_back(coords[k + 1][1] + deltay);
-					p4.push_back(coords[k + 1][2] + deltaz);
-				}
-				else if (k + 1 == chain_length && is_closed)
-				{
-					p4.push_back(coords[0][0] + deltax);
-					p4.push_back(coords[0][1] + deltay);
-					p4.push_back(coords[0][2] + deltaz);
-				}
-				else
-					continue;
+        vector<vector<int>> allimages = compute_periodic_img(images, coords, chain_length, box_dims);
 
-				result += compute_one(p1, p2, p3, p4);
-			}
-		}
+	for (int i = 0; i < allimages.size(); i++)
+	{
+  
+	    if (allimages[i][0] == 0 && allimages[i][1] == 0 && allimages[i][2] == 0)
+			continue;
+            else
+                {
+                  vector<int> translation_vector = {allimages[i][0], allimages[i][1], allimages[i][2]};
+                  //vector<vector<double>> 
+                  double** coords2 = translation(coords, chain_length,  translation_vector, box_dims);
+                  result += lk(coords,coords2, chain_length,chain_length,is_closed,0,0,0); 
+                }
+               
+
 	}
 
 	return result;
 }
 
+/*input: the filename, the chain length, the number of chains, 0/1 for ring/linear, box dimensions
+returns the periodic writhe of all chains in the system
+*/
 int main(int argc, char* argv[])
 {
-	MPI_Init(&argc, &argv);
-	int rank, size;
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        MPI_Init(&argc, &argv);
+        int rank, size;
+        MPI_Comm_size(MPI_COMM_WORLD, &size);
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        //cout << "ENTER";
 	int num_chains = stoi(argv[3]);
 	int chain_length = stoi(argv[2]);
-	int chunk = num_chains / size;
+        int chunk = num_chains / size;
 	int num;
+        int ringlinear=stoi(argv[4]);       
+        bool is_closed;
 	double box_dim;
-	if (argc >= 5)
-		box_dim = stod(argv[4]);
+	if (argc >= 6)
+		box_dim = stod(argv[5]);
 	else
 		box_dim = 0;
+        //cout<< box_dim;
+        if (ringlinear==0)
+        {
+           is_closed=true;
+        }
+        else
+        {
+           is_closed=false;
+        }
+
 	vector<double> box_dims = {box_dim, box_dim, box_dim};
-	create_output_dir();
-	if (!fs::exists("./output/periodic_wr_mpi"))
-	{
-		cout << "Creating periodic_wr_mpi directory..." << endl;
-		fs::create_directory("./output/periodic_wr_mpi");
-	}
-	ofstream outfile;
-	string file_name = to_string(chain_length) + "_periodic_wr_mpi_out_" + to_string(rank) + ".txt";
-	outfile.open("./output/periodic_wr_mpi/" + file_name);
-	double** coords = read_coords(argv[1], &num);
-	for (int i = rank * chunk; i < (rank + 1) * chunk; i++)
+        create_output_dir();
+        if (!fs::exists("./output/periodic_wr_mpi"))
+        {
+                cout << "Creating periodic_wr_mpi directory..." << endl;
+                fs::create_directory("./output/periodic_wr_mpi");
+        }
+        ofstream outfile;
+        string file_name = to_string(chain_length) + "_periodic_wr_mpi_out_" + to_string(rank) + ".txt";
+        outfile.open("./output/periodic_wr_mpi/" + file_name);
+	//create_output_dir();
+	//ofstream outfile;
+	//outfile.open("./output/periodic_wr_out.txt");
+	double** coords = read_coords(argv[1], &num, chain_length, box_dim);
+	for (int i = rank*chunk; i < (rank+1)*chunk; i++)
 	{
 		double** temp_coords = new double*[chain_length];
 		for (int j = 0; j < chain_length; j++)
@@ -97,15 +97,15 @@ int main(int argc, char* argv[])
 			// cout << temp_coords[j][0] << ", " << temp_coords[j][1] << ", " << temp_coords[j][2] <<
 			// "\n";
 		}
-		double pwr = periodic_wr(temp_coords, chain_length, box_dims, false);
-		pwr += wr(temp_coords, chain_length, false);
+
+		double pwr = periodic_wr(temp_coords, chain_length, box_dims, is_closed);
+		//pwr += wr(temp_coords, chain_length, is_closed);
 		outfile << pwr << "\n";
 		delete_array(temp_coords, chain_length);
 	}
 
 	outfile.close();
 	delete_array(coords, num_chains);
-
-	MPI_Finalize();
+        MPI_Finalize();
 	return 0;
 }

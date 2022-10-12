@@ -1,4 +1,27 @@
+/* -*- -*- ----------------------------------------------------------
+   TEPPP: Topological Entanglement in Polymers, Proteins and Periodic structures
+   https://github.com/TEPPP-software/TEPPP.git
+   Eleni Panagiotou, epanagio@asu.edu
+
+   Copyright (2021) Eleni Panagiotou This software is distributed under
+   the BSD 3-Clause License.
+
+   See the README file in the top-level TEPPP directory.
+   Contributors: Tom Herschberg, Kyle Pifer and Eleni Panagiotou
+------------------------------------------------------------------------- */
+
+
 #include "../include/funcs.h"
+
+
+/* -*- -*- ----------------------------------------------------------
+   Takes as input the filename, the number of chains, the length of the chains, the starting interval, the end interval, the step size and the box dimension (optional)
+   If the box dimension is not specified, or if it is equal to 0, then the system is not periodic and the coordinates are unwrapped. 
+   If a non-zero box-dimension is specified, the coordinates are unwrapped, according to the PBC.
+   Returns the writhe of each interval of a chain
+
+------------------------------------------------------------------------- */
+
 
 using namespace std;
 
@@ -16,7 +39,20 @@ int main(int argc, char* argv[])
 	int end_chunk = stoi(argv[5]);
 	int step = stoi(argv[6]);
 	int num;
-	double** coords = read_coords(argv[1], &num);
+        double box_dim;
+        if (argc >= 7)
+                box_dim = stod(argv[6]);
+        else
+                box_dim = 0;
+        double** coords;
+        if (box_dim == 0)
+        {
+                coords = read_coords(argv[1], &num);
+        }
+        else
+        {
+                coords = read_coords(argv[1], &num, chain_length, box_dim);
+        }
 	create_output_dir();
 	ofstream outfile;
 	outfile.open("./output/wr_scan_out.txt");

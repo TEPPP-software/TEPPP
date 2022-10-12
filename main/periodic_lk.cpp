@@ -1,17 +1,42 @@
+/* -*- -*- ----------------------------------------------------------
+   TEPPP: Topological Entanglement in Polymers, Proteins and Periodic structures
+   https://github.com/TEPPP-software/TEPPP.git
+   Eleni Panagiotou, epanagio@asu.edu
+
+   Copyright (2021) Eleni Panagiotou This software is distributed under
+   the BSD 3-Clause License.
+
+   See the README file in the top-level TEPPP directory.
+   Contributors: Tom Herschberg, Kyle Pifer and Eleni Panagiotou
+------------------------------------------------------------------------- */
 #include "../include/funcs.h"
 
 using namespace std;
 
+
+/*Takes as input the filename, the chain length, the numebr of chains, 0/1: 0 for ring, 1 for linear, box dimensions
+Returns the periodic linking number between each pair of chains.
+*/
 int main(int argc, char* argv[])
 {
 	int num_chains = stoi(argv[3]);
 	int chain_length = stoi(argv[2]);
+        int ringlinear=stoi(argv[4]);
 	double box_dim;
-	if (argc >= 5)
-		box_dim = stod(argv[4]);
+        bool is_closed;
+	if (argc >= 6)
+		box_dim = stod(argv[5]);
 	else
 		box_dim = 0;
 	vector<double> box_dims = {box_dim, box_dim, box_dim};
+        if (ringlinear==0)
+        {
+           is_closed=true;
+        }  
+        else
+        {
+           is_closed=false;
+        }
 	int num;
 	double** coords = read_coords(argv[1], &num);
 	double result[num_chains][num_chains];
@@ -73,7 +98,7 @@ int main(int argc, char* argv[])
 							chain2,
 							chain_length,
 							chain_length,
-							false,
+							is_closed,
 							temp[0] * box_dims[0],
 							temp[1] * box_dims[1],
 							temp[2] * box_dims[2]);
