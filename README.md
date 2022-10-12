@@ -77,7 +77,12 @@ Once a .teppp file with the desired coordinates has been generated, any of the s
 
 All `base` commands are called using the same syntax:
 
-The filename (including path) of the data file containing the coordinates of the system to analyze followed by CHAIN_LENGTH NUM_CHAINS BOX_DIM
+The filename (including path) of the data file containing the coordinates of the system to analyze followed by CHAIN_LENGTH NUM_CHAINS ARCHITECTURE (NUM_PROJECTIONS) BOX_DIM, where
+CHAIN_LENGTH: the length of the chains in the system (assuming they all have the same length)
+NUM_CHAINS: the number of chains in the system
+ARCHITECTURE: currently supporting ring or linear, denoted by 0, 1, respectively.
+NUM_PROJECTIONS: applies only to jones-it is the number of projections to use for the computation of the Jones polynomial. If working with ring chains, use 1.
+BOX_DIM: periodic box dimensions, assuming cubic box
 
 In addition to these `base` commands, there are several types of variant commands also included in TEPPP. `periodic` commands analyze the topological entanglement of a given system while accounting for periodic boundary conditions. The `periodic` commands that are currently available are:
 
@@ -88,16 +93,17 @@ The syntax for calling `periodic` commands is the same as the syntax for calling
 
 `scan` commands are used to analyze the topological entanglement of certain parts of chains rather than the entire chain. For example, if a user wants to the part of a single chain that contributes the most to the overall Writhe of that chain, they would use a `scan` command. The `scan` commands that are currently available are:
 
-* jones_scan | Calculates the Jones polynomial along each chain at given intervals
-* lk_scan | Calculates the linking number along each pair of chains at given intervals
-* wr_scan | Calculates the Writhe along each chain at given intervals
+* jones_scan | Calculates the Jones polynomial along each chain at given scanning lengths
+* lk_scan | Calculates the linking number along each pair of chains at given scanning lengths
+* wr_scan | Calculates the Writhe along each chain at given scanning lengths
 
 Calling `scan` commands requires 4 parameters, which must be provided in the command line in the order shown below:
 
-1. The filename (including path) of the data file containing the coordinates of the system to analyze.
+1. The filename (including path) of the data file containing the coordinates of the system to analyze, followed by CHAIN_LENGTH NUM_CHAINS ARCHITECTURE (NUM_PROJECTIONS)
 2. The length of the initial interval at which to scan.
 3. The length of the final interval at which to scan.
 4. The amount to increase the interval after a scan completes.
+5. BOX_DIM (optional)
 
 `mpi` commands are parallel versions of the `base`, `periodic`, and `scan` commands discussed above. They leverage MPI to split the workload between a given number of processors rather than performing the work serially. The `mpi` commands that are currently available are:
 
@@ -116,15 +122,15 @@ Calling `scan` commands requires 4 parameters, which must be provided in the com
 
 ### Gauss linking integral:
 
-To calculate the Gauss linking integral between each pair of chains in a system found in "../data/systemA.teppp" with 100 chains each of length 20 in a cubic periodic box of length 13.35315:
+To calculate the Gauss linking integral between each pair of chains in a system found in "../data/systemA.teppp" with 100 linear chains each of length 20 in a cubic periodic box of length 13.35315:
 
 ```bash
-./lk "../data/systemA.teppp" 20 100 13.35315
+./lk "../data/systemA.teppp" 20 100 1 13.35315
 ```
 using MPI to split the work between 4 different processes:
 
 ```bash
-mpirun -np 4 ./lk_mpi "../data/systemA.teppp" 20 100 13.35315
+mpirun -np 4 ./lk_mpi "../data/systemA.teppp" 20 100 1 13.35315
 ```
 
 ### Periodic Writhe:
@@ -132,14 +138,14 @@ mpirun -np 4 ./lk_mpi "../data/systemA.teppp" 20 100 13.35315
 To calculate the Periodic Writhe of each chain in a system found in "../data/systemA.teppp" with 100 chains each of length 20 in a cubic periodic box of length 13.35315:
 
 ```bash
-./periodic_wr "../data/systemA.teppp" 20 100 13.35315
+./periodic_wr "../data/systemA.teppp" 20 100 1 13.35315
 ```
 ### Jones Polynomial:
 
 To compute the Jones polynomial of each chain in a system found in "../data/systemA.teppp" with 100 chains each of length 20 in a cubic periodic box of length 13.35315:
 
 ```bash
-./jones "../data/systemA.teppp" 20 100 13.35315
+./jones "../data/systemA.teppp" 20 100 1 100 13.35315
 ```
 
 ### Scan Jones Polynomial:
@@ -147,7 +153,7 @@ To compute the Jones polynomial of each chain in a system found in "../data/syst
 To scan along each chain and calculate the Jones polynomial of each subchain in a system found in "../data/systemA.teppp" with 100 chains each of length 20 starting with scanning length 5 up to scanning length 10 with a step of 5:
 
 ```bash
-./jones_scan "../data/systemC.teppp" 20 100 5 10 5
+./jones_scan "../data/systemC.teppp" 20 100 1 100 5 10 5
 ```
 
 
