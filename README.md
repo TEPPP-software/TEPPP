@@ -14,7 +14,7 @@
 > \
 >If you use this code you must reference the following paper: \
 > \
->Herschberg, T., Pifer, K. and Panagiotou, E., 2022, A computational package for measuring Topological Entanglement in Polymers, >Proteins and Periodic systems (TEPPP), Comp. Phys. Commun. 286 108639
+>Herschberg, T., Pifer, K. and Panagiotou, E., 2022, A computational package for measuring Topological Entanglement in Polymers, Proteins and Periodic systems (TEPPP), Comp. Phys. Commun. 286 108639
 > \
 > \
 >visit www.elenipanagiotou.com for updated information
